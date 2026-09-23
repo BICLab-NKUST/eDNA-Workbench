@@ -1,0 +1,314 @@
+/* src/styles/components/DockerCheckPanel.css */
+.docker-check-panel {
+  margin-bottom: 30px;
+}
+
+/* ── Header ── */
+.panel-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.docker-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+}
+
+.docker-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: #5490e8;
+}
+
+.panel-header h2 {
+  margin: 0 0 0.5rem;
+  color: var(--text);
+  font-size: 1.8rem;
+}
+
+.panel-header p {
+  margin: 0;
+  color: var(--detail);
+}
+
+/* ── Spinner ── */
+.check-status {
+  margin: 2rem 0;
+}
+
+.checking-spinner {
+  text-align: center;
+  padding: 2rem;
+}
+
+.checking-spinner .spinner {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 1rem;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Status List ── */
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-surface) 60%, transparent 40%);
+  border: 3px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+/* 左側指示點 */
+.status-item::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-item.success {
+  border-color: color-mix(in srgb, var(--success) 60%, transparent 40%);
+  background: color-mix(in srgb, var(--success) 8%, var(--bg-surface) 92%);
+}
+.status-item.success::before {
+  background: var(--success);
+}
+
+.status-item.error {
+  border-color: color-mix(in srgb, var(--danger) 60%, transparent 40%);
+  background: color-mix(in srgb, var(--danger) 8%, var(--bg-surface) 92%);
+}
+.status-item.error::before {
+  background: var(--danger);
+}
+
+.status-item.warning {
+  border-color: color-mix(in srgb, var(--warning) 60%, transparent 40%);
+  background: color-mix(in srgb, var(--warning) 8%, var(--bg-surface) 92%);
+}
+.status-item.warning::before {
+  background: var(--warning);
+}
+
+.status-label {
+  flex: 1;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.status-value {
+  font-weight: 600;
+}
+
+/* ── Guide Button ── */
+.button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.instruction-toggle {
+  padding: 0.75rem 2.5rem;
+  background: var(--bg-surface-raised);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.instruction-toggle:hover {
+  background: color-mix(in srgb, var(--bg-surface-raised) 85%, var(--text) 15%);
+  border-color: var(--text);
+}
+
+/* ── Instructions Panel ── */
+.instructions-panel {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: var(--bg-surface-raised);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.instructions-content h3 {
+  margin: 0 0 1rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.instructions-content p {
+  color: var(--detail);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.instructions-content p.note {
+  background: color-mix(in srgb, var(--warning) 10%, transparent 90%);
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid var(--warning);
+}
+
+.download-links {
+  margin-bottom: 1rem;
+}
+
+.download-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-surface-raised);
+  border: 2.5px solid #5490e8;
+  border-radius: 8px;
+  color: #5490e8;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.download-button:hover {
+  border-color: #5490e8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px #5490e8;
+}
+
+.instruction-steps {
+  margin-top: 1.5rem;
+}
+
+.instruction-steps h4 {
+  margin: 1rem 0 0.5rem;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.instruction-steps ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  color: var(--detail);
+}
+
+.instruction-steps li {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.instruction-steps code {
+  background: var(--bg-code);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--text-code);
+}
+
+/* ── Panel Actions ── */
+.panel-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.recheck-button,
+.next-button {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.recheck-button {
+  background: var(--bg-surface-raised);
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+
+.recheck-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bg-surface-raised) 85%, var(--text) 15%);
+  border-color: var(--text);
+}
+
+.next-button {
+  background: color-mix(in srgb, var(--primary) 8%, var(--bg-surface-raised) 92%);
+  color: var(--primary);
+  border: 2px solid color-mix(in srgb, var(--primary) 40%, transparent 60%);
+}
+
+.next-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 50%, var(--bg-page) 50%);
+}
+
+.recheck-button:disabled,
+.next-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Pull Progress Log ── */
+.pull-log-box {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-code, #1a1a2e);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  max-height: 220px;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.pull-log-line {
+  color: var(--text-code);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.pull-log-cursor {
+  color: var(--primary);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.pull-error {
+  margin-top: 0.75rem;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--danger) 10%, transparent 90%);
+  border-left: 3px solid var(--danger);
+  color: var(--danger);
+  font-size: 0.9rem;
+}

@@ -1,0 +1,164 @@
+/* 設定整體容器的樣式 */
+.container {
+  width: 100%;
+  padding: 10px;
+  overflow-x: auto;
+}
+
+/* 設定外層的flex排列 */
+.flex-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* 內部欄位設定 */
+.flex-column-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 220px;
+  margin-right: 10px;
+}
+
+/* 搜尋框樣式 */
+.search-input {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 10px;
+  border: 1px solid var(--detail);
+  border-radius: 4px;
+}
+
+/* 缩减按钮样式 */
+.reduction-button {
+  padding: 5px 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--detail);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* 基因列表項目 */
+.gene-list-item {
+  display: flex;
+  padding: 4px 10px;
+  margin: 2px 0;
+  align-items: center;
+  word-wrap: break-word;
+  white-space: normal;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--text);
+  box-shadow: 0 0 5px var(--text);
+}
+
+/* 选中时基因项的样式 */
+.gene-list-item.selected {
+  box-shadow: 0 0 5px 5px var(--success);
+}
+
+/* 基因名的背景颜色 */
+.gene-list-item span {
+  background-color: var(--bg-page);
+  padding: 0 5px;
+  border-radius: 4px;
+}
+
+/* 基因顏色框 */
+.gene-color-box {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  border-radius: 50%;
+}
+
+/* 分頁控制 */
+.pagination-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* 比較範圍的選擇按鈕 */
+.button-group {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.GeneSelector-Search-button {
+  padding: 6px 12px;
+  margin-right: 6px;
+  background-color: var(--bg-surface-raised);
+  border: 2px solid var(--border);
+  color: var(--text);
+  border: none;
+  border-radius: 4px;
+}
+
+/* 輸入範圍 */
+.range-input {
+  width: 60px;
+}
+
+/* 結果顯示區域 */
+.results-container {
+  padding-top: 10px;
+  padding-left: 10px;
+  margin-top: 10px;
+  border: 1px solid var(--primary);
+}
+
+/* 比較中狀態的文本 */
+.comparing-text {
+  margin-top: 10px;
+  color: var(--success);
+}
+
+/* 無結果狀態 */
+.no-results {
+  padding: 16px;
+  margin-top: 10px;
+  font-size: 20px;
+  border: 1px solid var(--primary);
+  color: var(--danger);
+}
+
+/* 範圍警告 */
+.range-warning {
+  padding: 16px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: var(--warning);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  border-radius: 8px;
+}
+
+/* 分頁控制按鈕 */
+.pagination-controls button {
+  padding: 6px 12px;
+  border: 2px solid var(--border);
+  background-color: var(--bg-surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  border: none;
+}
+
+/* 警告框樣式 */
+.GeneSelector-warning-box {
+  padding: 16px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: var(--warning);
+  border: 1px solid var(--primary);
+  color: var(--text);
+  border-radius: 8px;
+}
+
+.GeneSelector-warning-box ul {
+  padding-left: 50px;
+}

@@ -1,0 +1,365 @@
+/* ============================ */
+/* 外層容器，啟用水平滾動 */
+.gene-table-container {
+  width: 100%;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+.gene-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.GeneTable-warning-box {
+  padding: 16px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: var(--warning);
+  border: 1px solid var(--primary);
+  color: var(--text);
+  border-radius: 8px;
+}
+
+.GeneTable-warning-box ul {
+  padding-left: 50px;
+}
+
+.GeneTable-warning-box li::before {
+  color: var(--text); 
+  font-size: 20px; 
+  margin-right: 10px; 
+  vertical-align: middle; 
+}
+
+/* ============================ */
+.gene-table {
+  width: max-content;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+/* ============================ */
+/* 基本格線 */
+.gene-table th,
+.gene-table td {
+  padding: 6px 12px;
+  font-size: 14px;
+  text-align: center;
+  white-space: nowrap;
+  border: 3px solid var(--border);
+  color: var(--text);
+  z-index: 20;
+}
+
+.gene-table-inputbox {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+}
+
+/* ========================== */
+.fa-table-count-view .gene-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-surface);
+}
+
+.fa-table-count-view .gene-table th:nth-child(1),
+.fa-table-count-view .gene-table th:nth-child(2),
+.fa-table-count-view .gene-table td:nth-child(1),
+.fa-table-count-view .gene-table td:nth-child(2) {
+  position: sticky;
+  left: 0;
+  background: var(--bg-surface);
+  z-index: 3;
+  min-width: 40px;
+  text-align: left;
+}
+
+/* ============================ */
+.fa-table-color-box {
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border: 1px solid var(--border);
+}
+
+/* ============================ */
+.fa-table-checkbox,
+.fa-table-number-input {
+  width: 20px;
+  height: 20px;
+  margin: 0 auto;
+}
+
+.fa-table-number-input {
+  width: 60px;
+  padding: 5px;
+  text-align: center;
+  background: var(--input);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.fa-table-header,
+.fa-table-cell {
+  padding: 8px 12px;
+}
+
+/* ============================ */
+.fa-table-header:first-child,
+.fa-table-cell:first-child {
+  width: 10px;
+  padding: 5px;
+}
+
+/* ============================ */
+.fa-table-inputbox {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--input);
+  color: var(--text);
+}
+
+/* ============================ */
+.fa-table-button {
+  padding: 6px 12px;
+  margin-right: 6px;
+  background-color: var(--bg-surface-raised);
+  border: 2px solid var(--border);
+  color: var(--text);
+  border: none;
+  border-radius: 4px;
+}
+
+.fa-table-button:disabled {
+  background-color: var(--button-disabled-bg);
+  color: var(--button-disabled-text);
+}
+
+/* ============================ */
+.fa-table-wrapper {
+  overflow-x: auto;
+}
+
+.fa-table-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.fa-table-pagination button {
+  padding: 6px 12px;
+  background-color: var(--bg-surface-raised);
+  border: 2px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+}
+
+.fa-table-pagination button:disabled {
+  background-color: var(--bg-surface-raised);
+  border: 2px solid var(--border);
+  color: var(--text);
+}
+
+/* ============================ */
+.CVSTable-search-container {
+  margin-bottom: 10px;
+}
+
+.CVSTable-search-input {
+  padding: 5px;
+  width: 90%;
+}
+
+.CVSTable-filter-buttons {
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.CVSTable-button {
+  font-size: 20px;
+  margin-left: 8px;
+  margin-right: 8px;
+  padding: 3px 6px;
+  cursor: pointer;
+  background-color: var(--bg-surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.CVSTable-button.active {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--primary);
+  border: 1px solid var(--border);
+  color: var(--bg-surface);
+}
+
+.CVSTable-button-All-Clear button {
+  padding: 6px 12px;
+  margin-right: 6px;
+  background-color: var(--bg-surface-raised);
+  border: 2px solid var(--border);
+  color: var(--text);
+  border: none;
+  border-radius: 4px;
+}
+
+.CVSTable-percentage-toggle {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+}
+
+.CVSTable-toggle-button button {
+  font-size: 15px;
+  width: 150px;
+  height: 40px;
+  cursor: pointer;
+  background-color: var(--bg-surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.CVSTable-percentage-range {
+  margin-top: 10px;
+}
+
+.CVSTable-percentage-input {
+  margin-left: 10px;
+  width: 100px;
+  font-size: 20px;
+  padding: 2px 4px;
+  background: var(--input);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.CVSTable-gene-table-container {
+  margin-top: 10px;
+}
+
+.CVSTable-gene-table-wrapper {
+  height: 800px;
+  overflow-y: auto;
+  display: block;
+  max-width: 100%;
+}
+
+.CVSTable-gene-table {
+  width: max-content;
+  min-width: fit-content;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+/* ============================ */
+.CVSTable-gene-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--detail);
+}
+
+.CVSTable-gene-table tbody {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--detail);
+}
+
+.CVSTable-gene-table td:first-child,
+.CVSTable-gene-table th:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--detail);
+  min-width: 100px;
+  text-align: left;
+  z-index: 3;
+}
+
+.CVSTable-gene-table td:nth-child(2),
+.CVSTable-gene-table th:nth-child(2) {
+  position: sticky;
+  left: 100px;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--detail);
+  text-align: left;
+  z-index: 3;
+}
+
+.CVSTable-header-hap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.CVSTable-color-checkbox {
+  margin-right: 5px;
+}
+
+.CVSTable-color-box {
+  width: 12px;
+  height: 12px;
+  background-color: #101010ff;
+  margin-right: 10px;
+  border-radius: 2px;
+}
+
+/* ============================ */
+/* Table cell styles */
+.CVSTable-gene-table td {
+  text-align: center;
+}
+
+.CVSTable-gene-table td {
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid var(--detail);
+}
+
+.CVSTable-gene-table th {
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid var(--detail);
+}
+
+/* ========================== */
+/* 詳細資料表固定第一列和第一欄 */
+/* ========================== */
+.view-detail .gene-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--muted);
+}
+
+.view-detail .gene-table td:first-child,
+.view-detail .gene-table th:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--bg-surface-raised);
+  z-index: 3;
+  text-align: left;
+  min-width: 180px;
+}
+
+.view-detail .gene-table-wrapper {
+  min-width: 800px;
+  overflow: auto;
+}

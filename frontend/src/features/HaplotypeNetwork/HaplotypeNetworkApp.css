@@ -1,0 +1,132 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-page);
+  min-height: 100vh;
+  box-sizing: border-box;
+  color: var(--text);
+}
+
+/* ===== 按鈕群組 ===== */
+.button-group {
+  display: flex;
+}
+
+.button-group button {
+  padding: 8px 16px;
+  border: none;
+  background-color: var(--primary);
+  color: var(--bg-surface);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-group button:hover {
+  opacity: 0.9;
+}
+
+.button-group.nav {
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.button-group.app {
+  gap: 5px;
+  padding: 12px;
+  background: var(--bg-page);
+  border: 1px solid var(--text);
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== 區塊 Section 區隔 ===== */
+.section {
+  max-width: 100%;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+}
+
+.right-section {
+  flex-direction: column;
+  display: flex;
+  min-width: 40%;
+}
+
+/* Flex 排版 ===== */
+.flex-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.tables-row {
+  display: flex;
+  gap: 20px;
+  width: 90%;
+  align-items: flex-start;
+}
+
+/* 地圖外框 (左側和過濾地圖) */
+.map-box,
+.map-Filteredbox {
+  min-width: 55%;
+  flex: 2;
+  overflow: auto;
+}
+
+/* GeneTable 區塊 */
+.gene-section,
+.geneselector-section {
+  flex: 1;
+  min-width: 40%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 15px;
+  overflow: auto;
+}
+
+.haplotypeNetwork{
+  min-width: 55%;
+  flex: 2;
+  overflow: auto;
+}
+
+/* ===== 分頁區塊 ===== */
+.pagination {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-top: 1px solid var(--border);
+}
+
+
+/* ===== RWD ===== */
+@media (max-width: 768px) {
+
+  .flex-container,
+  .tables-row {
+    flex-direction: column;
+  }
+
+  .gene-section,
+  .haplotype-section {
+    width: 100%;
+    min-width: 0;
+  }
+}

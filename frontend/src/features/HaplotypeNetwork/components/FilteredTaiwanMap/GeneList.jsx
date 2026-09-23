@@ -1,0 +1,248 @@
+import { useEffect, useMemo, useState } from "react";
+
+const GeneList = ({  
+  genes,
+  selectedGene,
+  activeSimilarityGroup,
+  selectedGenes,
+  setSelectedGenes,
+  geneColors,
+  cityVisibility,
+  onCityVisibilityChange,  
+  filteredCityGeneData,    
+  onFilteredGenesChange,
+}) => {
+  const [showGenes, setShowGenes] = useState(true); // 控制顯示基因或城市
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const genesPerPage = 50;
+
+  const allGenes = useMemo(() => (genes || []).map((g) => g.name), [genes]);
+
+  const totalPages = Math.max(1, Math.ceil(allGenes.length / genesPerPage));
+
+  const getSortedGenes = () => {
+    const selectableGenes = allGenes.filter((name) => {
+      const isEnabled =
+        name === selectedGene ||
+        (Array.isArray(activeSimilarityGroup) && activeSimilarityGroup.includes(name));
+      return isEnabled;
+    });
+    
+    const nonSelectableGenes = allGenes.filter((name) => !selectableGenes.includes(name));
+    return [...selectableGenes, ...nonSelectableGenes];
+  };
+
+  const sortedGenes = useMemo(() => getSortedGenes(), [allGenes, selectedGene, activeSimilarityGroup]);
+
+  const currentGenes = sortedGenes.slice(
+    (currentPage - 1) * genesPerPage,
+    currentPage * genesPerPage
+  );
+
+  const toggleGene = (name) => {
+    setSelectedGenes((prev) =>
+      prev.includes(name) ? prev.filter((g) => g !== name) : [...prev, name]
+    );
+  };
+
+  // 控制城市圓形圖顯示/隱藏
+  const toggleCityVisibility = (city) => {
+    onCityVisibilityChange((prevVisibility) => ({
+      ...prevVisibility,
+      [city]: !prevVisibility[city],
+    }));
+  };
+
+  // 分頁功能
+  const goToPrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const goToNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+
+  const handleSelectAll = () => {
+    const selectableGenes = currentGenes.filter((name) => {
+      const isEnabled =
+        name === selectedGene ||
+        (Array.isArray(activeSimilarityGroup) && activeSimilarityGroup.includes(name));
+      return isEnabled;
+    });
+    setSelectedGenes(selectableGenes);
+  };
+
+  const handleClearAll = () => setSelectedGenes([]);
+
+  // 在 GeneList 組件中，過濾後的基因傳遞到父組件
+  useEffect(() => {
+    onFilteredGenesChange(allGenes); 
+  }, [allGenes]);
+
+  // 控制城市搜尋框過濾
+  const [citySearchTerm, setCitySearchTerm] = useState(""); // 用來過濾城市
+  const filteredCities = useMemo(() => {
+    return Object.keys(filteredCityGeneData).filter((city) =>
+      city.toLowerCase().includes(citySearchTerm.toLowerCase())
+    );
+  }, [citySearchTerm, filteredCityGeneData]);
+
+  // 控制基因搜尋框過濾
+  const [searchGeneTerm, setSearchGeneTerm] = useState(""); // 用來過濾基因名稱
+  const filteredGenes = useMemo(() => {
+    return allGenes.filter((gene) =>
+      gene.toLowerCase().includes(searchGeneTerm.toLowerCase())
+    );
+  }, [searchGeneTerm, allGenes]);
+
+  // 控制全選和清除
+  const handleCitySelectAll = () => {
+    const allCities = Object.keys(filteredCityGeneData);
+    onCityVisibilityChange((prevVisibility) => {
+      const updatedVisibility = { ...prevVisibility };
+      allCities.forEach((city) => {
+        updatedVisibility[city] = true;
+      });
+      return updatedVisibility;
+    });
+  };
+
+  const handleCityClearAll = () => {
+    onCityVisibilityChange((prevVisibility) => {
+      const updatedVisibility = { ...prevVisibility };
+      Object.keys(filteredCityGeneData).forEach((city) => {
+        updatedVisibility[city] = false;
+      });
+      return updatedVisibility;
+    });
+  };
+
+  const [isConfigured, setIsConfigured] = useState(false); // 用來判斷是否完成設定
+     
+  // 檢查是否所有設定都已完成
+  useEffect(() => {
+    const isAllConfigured =  activeSimilarityGroup && activeSimilarityGroup.length > 1;
+    setIsConfigured(isAllConfigured);  
+  }, [filteredCityGeneData, activeSimilarityGroup]); 
+
+  return (
+    <div style={{ minWidth: "10%" }}>
+
+      {/* 如果設定完成，顯示原本的內容 */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+        <button onClick={() => setShowGenes(true)} className="GeneList-button-Select">
+          Selected ASV
+        </button>
+        <button onClick={() => setShowGenes(false)} className="GeneList-button-Select">
+          Selected Locations
+        </button>
+      </div>
+
+      {/* 根據 showGenes 狀態顯示對應區域 */}
+      {showGenes ? (
+        <>
+          {/* Gene List Header */}
+          <h4 style={{ whiteSpace: "nowrap" }}>Select display ASVs:</h4>
+
+          {/* Gene Search Input */}
+          <input
+            type="text"
+            value={searchGeneTerm}
+            onChange={(e) => setSearchGeneTerm(e.target.value)}
+            placeholder="Search Genes"
+            className="search-input"
+            style={{ width: "100%", padding: "6px", marginBottom: "8px" }}
+          />
+
+          {/* Gene Selection Buttons */}
+          <div className="flex flex-gap-5" style={{ marginBottom: "8px" }}>
+            <button className="GeneList-button" onClick={handleSelectAll}>Select All</button>
+            <button className="GeneList-button" onClick={handleClearAll}>Clear All</button>
+          </div>
+
+          {/* Genes List */}
+          <div style={{ maxHeight: "800px", overflowY: "auto", paddingRight: "5px" }}>
+            {currentGenes.map((name) => {
+              const isEnabled =
+                name === selectedGene ||
+                (Array.isArray(activeSimilarityGroup) && activeSimilarityGroup.includes(name));
+              return (
+                <label
+                  key={name}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    opacity: isEnabled ? 1 : 0.3,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedGenes.includes(name)}
+                    onChange={() => toggleGene(name)}
+                    disabled={!isEnabled}
+                    style={{ cursor: isEnabled ? "pointer" : "not-allowed" }}
+                  />
+                  <span style={{ color: geneColors[name] || "black" }}>
+                    {name}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+
+          {/* Pagination */}
+          <div className="pagination-controls" style={{ marginTop: "8px" }}>
+            <button onClick={goToPrevPage} disabled={currentPage === 1}>
+              Prev
+            </button>
+            <span>
+              {currentPage} / {totalPages}
+            </span>
+            <button onClick={goToNextPage} disabled={currentPage === totalPages}>
+              Next
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* City Pie Chart Visibility Control */}
+          <div>
+            <h4 style={{ whiteSpace: "nowrap" }}>Select display City:</h4>
+
+            {/* City Search Input */}
+            <input
+              type="text"
+              value={citySearchTerm}
+              onChange={(e) => setCitySearchTerm(e.target.value)}
+              placeholder="Search"
+              className="search-input"
+              style={{ width: "100%", padding: "6px", marginBottom: "8px" }}
+            />
+
+            {/* City Select All / Clear All */}
+            <div style={{ marginBottom: "8px" }}>
+              <button className="GeneList-button" onClick={handleCitySelectAll}>Select All</button>
+              <button className="GeneList-button" onClick={handleCityClearAll}>Clear All</button>
+            </div>
+
+            {/* City List */}
+            <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+              {filteredCities.map((city) => (
+                <label
+                  key={city}
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={cityVisibility[city] || false}
+                    onChange={() => toggleCityVisibility(city)}
+                  />
+                  <span>{city}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default GeneList;

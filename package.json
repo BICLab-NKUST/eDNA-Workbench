@@ -1,0 +1,139 @@
+{
+  "name": "edna-workbench",
+  "version": "1.3.0",
+  "description": "eDNA WorkBench",
+  "main": "electron/main.js",
+  "private": true,
+  "author": "uiskskkekekk",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BICLab-NKUST/eDNA-Workbench.git"
+  },
+  "homepage": "https://github.com/BICLab-NKUST/eDNA-Workbench#readme",
+  "bugs": {
+    "url": "https://github.com/BICLab-NKUST/eDNA-Workbench/issues"
+  },
+  "engines": {
+    "node": ">=22.12.0 <23",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "electron": "electron .",
+    "electron:dev": "concurrently --kill-others --names toolkit,viz,frontend,electron \"npm run backend-toolkit:dev\" \"npm run backend-viz:dev\" \"npm run frontend:dev\" \"wait-on http://127.0.0.1:5173 tcp:127.0.0.1:3001 tcp:127.0.0.1:3000 && electron .\"",
+    "prepare-node": "node scripts/download-node.js && node scripts/extract-node.js",
+    "clean": "rm -rf dist",
+    "build": "npm run prepare-node && npm run frontend:build && npm run backend:install",
+    "dist": "npm run clean && npm run build && electron-builder",
+    "dist:all": "npm run clean && npm run build && electron-builder -mwl",
+    "frontend:install": "npm install --prefix frontend",
+    "frontend:dev": "npm run dev --prefix frontend",
+    "frontend:build": "npm run build --prefix frontend",
+    "backend-toolkit:install": "npm install --prefix backend-toolkit",
+    "backend-toolkit:dev": "npm run dev --prefix backend-toolkit",
+    "backend-viz:install": "npm install --prefix backend-viz",
+    "backend-viz:dev": "npm run dev --prefix backend-viz",
+    "backend:dev": "npm run backend-toolkit:dev",
+    "backend:install": "npm run backend-toolkit:install && npm run backend-viz:install",
+    "install:projects": "npm run frontend:install && npm run backend:install",
+    "postinstall": "npm run install:projects"
+  },
+  "build": {
+    "appId": "com.edna.edna-workbench",
+    "productName": "eDNA WorkBench",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "frontend/dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/node",
+        "to": "node"
+      },
+      {
+        "from": "backend-toolkit",
+        "to": "backend-toolkit",
+        "filter": [
+          "**/*",
+          "!.env",
+          "!.env.*",
+          "!uploads/**/*",
+          "!outputs/**/*",
+          "!logs/**/*"
+        ]
+      },
+      {
+        "from": "backend-toolkit/node_modules",
+        "to": "backend-toolkit/node_modules"
+      },
+      {
+        "from": "backend-viz/reduce_bin",
+        "to": "reduce_bin"
+      },
+      {
+        "from": "backend-viz",
+        "to": "backend-viz",
+        "filter": [
+          "**/*",
+          "!uploads/**/*",
+          "!outputs/**/*",
+          "!logs/**/*",
+          "!reduce_bin/**/*"
+        ]
+      },
+      {
+        "from": "backend-viz/node_modules",
+        "to": "backend-viz/node_modules"
+      }
+    ],
+    "mac": {
+      "icon": "icon/eDNA.png",
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg"
+      ],
+      "identity": null
+    },
+    "win": {
+      "icon": "icon/eDNA.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "installerIcon": "icon/eDNA.ico",
+      "uninstallerIcon": "icon/eDNA.ico",
+      "uninstallDisplayName": "eDNA WorkBench uninstaller",
+      "license": "LICENSE",
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "icon": "icon/eDNA.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.4",
+    "electron": "^38.2.2",
+    "electron-builder": "^26.0.12",
+    "sass": "^1.94.0",
+    "wait-on": "^9.1.0"
+  }
+}

@@ -1,0 +1,197 @@
+/* ========================================
+   COMMON UI COMPONENTS
+   ======================================== */
+
+/* Buttons */
+.analysis-main .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.analysis-main .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.analysis-main .btn-primary {
+  background: var(--primary);
+  color: var(--bg-surface);
+}
+
+.analysis-main .btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 85%, var(--bg-surface) 15%);
+}
+
+.analysis-main .btn-secondary {
+  background: var(--bg-surface-raised);
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+
+.analysis-main .btn-secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bg-surface-raised) 85%, var(--text) 15%);
+  border-color: var(--text);
+}
+
+.analysis-main .btn-danger {
+  background: var(--danger);
+  color: var(--bg-surface);
+}
+
+.analysis-main .btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 85%, black 15%);
+}
+
+.analysis-main .btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.analysis-main .btn-outline:hover:not(:disabled) {
+  background: var(--primary);
+  color: var(--bg-surface);
+}
+
+.analysis-main .btn-sm {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+/* Alerts */
+.analysis-main .alert {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+/* Upload Alerts */
+.analysis-main .alert.error {
+  background: color-mix(in srgb, var(--danger) 10%, var(--bg-surface) 90%);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 20%, var(--bg-surface) 80%);
+}
+
+.analysis-main .alert button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 8px;
+}
+
+/* Progress Bar */
+.analysis-main .progress-bar {
+  width: 100%;
+  height: 10px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.analysis-main .progress-fill {
+  height: 100%;
+  background: var(--primary);
+  /*linear-gradient(90deg, var(--progress-fill), var(--success)); */
+  transition: width 0.3s ease;
+}
+
+/* Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top: 2px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* File Items (通用) */
+.analysis-main .file-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  border-radius: 8px;
+}
+
+.analysis-main .file-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.analysis-main .file-name {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.analysis-main .file-size,
+.analysis-main .file-type {
+  font-size: 0.9em;
+  color: var(--detail);
+}
+
+/* Upload File Remove Button */
+.analysis-main .remove-btn {
+  background: var(--danger);
+  color: var(--bg-surface);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.analysis-main .remove-btn:hover {
+  background: color-mix(in srgb, var(--danger) 85%, black 15%);
+}
+
+/* input type = "number" */
+.analysis-main input[type='number'] {
+  padding: 3px 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 1em;
+  background: var(--input);
+  color: var(--text);
+}
+
+.analysis-main input[type='text'] {
+  padding: 3px 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 1em;
+  background: var(--input);
+  color: var(--text);
+}

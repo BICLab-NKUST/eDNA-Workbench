@@ -1,0 +1,202 @@
+.navbar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: var(--bg-surface);
+  padding: 0.4% 1.2%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 0;
+  border-bottom: 1px solid var(--border);
+  transition: margin-right 0.3s ease, width 0.3s ease;
+}
+
+[data-platform="darwin"] .navbar {
+  margin-top: 31.5px;
+}
+
+.navbar-logo {
+  height: 50px;
+  width: calc(50px * 2.583); /* 依圖片真實比例 2043/791 */
+  margin: 5px 15px 5px 0px;
+  cursor: pointer;
+  object-fit: contain;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.nav-item {
+  position: relative;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.nav-item:hover {
+  background-color: var(--bg-surface-raised);
+  border-color: var(--detail);
+}
+
+.nav-item.active {
+  color: var(--primary);
+  background-color: var(--bg-surface-raised);
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  padding: 5px 0;
+  display: none;
+  flex-direction: column;
+  z-index: 1001;
+}
+
+/* .dropdown:hover .dropdown-menu {
+  display: flex;
+} */
+
+.dropdown-menu.show {
+  display: flex;
+}
+
+/* File Upload Section - Removed unused styles */
+
+.theme-toggle-container {
+  margin-left: 30px;
+}
+
+.dropdown-item {
+  padding: 10px 15px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+  /* Prevent text wrapping */
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-surface-raised);
+}
+
+.dropdown-item.active {
+  color: var(--primary);
+  background-color: var(--bg-surface-raised);
+}
+
+
+/* Fasta 選擇器容器 */
+.fasta-selector-container {
+  padding: 5px 15px;
+}
+
+/* Fasta 選擇按鈕 (模擬 Select) */
+.fasta-select-btn {
+  padding: 6px 10px;
+  background-color: #e6f0ff;
+  /* 保留你原本的淺藍色，或改成 var(--bg-surface-raised) */
+  border-radius: 4px;
+  color: #0066cc;
+  /* 保留原本的深藍色 */
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.fasta-select-btn:hover {
+  filter: brightness(0.95);
+}
+
+.fasta-filename {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+/* Fasta 下拉選單 */
+.fasta-dropdown-list {
+  border: 1px solid var(--border);
+  margin-top: 4px;
+  border-radius: 4px;
+  background-color: var(--bg-surface);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Fasta 選單項目 */
+.fasta-option {
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.fasta-option:hover {
+  background-color: var(--bg-surface-raised);
+}
+
+.fasta-option.selected {
+  background-color: var(--bg-surface-raised);
+  /* 或用更明顯的顏色 */
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* 上傳按鈕的 Label */
+.upload-label-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.upload-hint {
+  font-size: 0.75rem;
+  color: var(--detail, #666);
+  /* 如果沒有 muted-foreground 變數則用 #666 */
+  margin-top: 2px;
+}
+
+/* 讓分析進度條靠右 */
+.navbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.navbar-action-portal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 10px;
+}

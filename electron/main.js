@@ -1,0 +1,640 @@
+const { execSync, spawn } = require("child_process");
+const {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  screen,
+  shell,
+} = require("electron");
+const net = require("net");
+const http = require("http");
+const path = require("path");
+const fs = require("fs");
+const os = require("os");
+
+const isDev = !app.isPackaged;
+
+let mainWindow;
+let AnalysisBackendProcess;
+let VizBackendProcess;
+
+// Track actual ports used by backends
+let analysisBackendPort = 3001;
+let vizBackendPort = 3000;
+
+/**
+ * Check if a port is available by attempting to listen on it.
+ * Returns true if port is free, false if occupied.
+ */
+function isPortAvailable(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once("error", () => resolve(false));
+    server.once("listening", () => {
+      server.close(() => resolve(true));
+    });
+    // Match the backends' loopback-only binding so the availability check
+    // tests the exact address/port pair the app will use.
+    server.listen(port, "127.0.0.1");
+  });
+}
+
+/**
+ * Wait until a local backend answers its health endpoint.
+ * This avoids coupling startup readiness to console log wording.
+ */
+function waitForBackendHealth(port, backendName, timeoutMs = 30000) {
+  const startedAt = Date.now();
+
+  return new Promise((resolve, reject) => {
+    const retry = () => {
+      if (Date.now() - startedAt >= timeoutMs) {
+        reject(
+          new Error(
+            `${backendName} failed to start within ${timeoutMs / 1000} seconds`
+          )
+        );
+        return;
+      }
+
+      setTimeout(check, 200);
+    };
+
+    const check = () => {
+      const request = http.get(
+        {
+          hostname: "127.0.0.1",
+          port,
+          path: "/health",
+          timeout: 1000,
+        },
+        (response) => {
+          response.resume();
+
+          if (response.statusCode === 200) {
+            resolve();
+            return;
+          }
+
+          retry();
+        }
+      );
+
+      request.on("timeout", () => request.destroy());
+      request.on("error", retry);
+    };
+
+    check();
+  });
+}
+
+/**
+ * Find an available port starting from preferredPort.
+ * Tries up to maxAttempts sequential ports.
+ * @param {number} preferredPort
+ * @param {number[]} excludePorts - ports to skip (already assigned to other backends)
+ * @param {number} maxAttempts
+ */
+async function findAvailablePort(
+  preferredPort,
+  excludePorts = [],
+  maxAttempts = 20
+) {
+  for (let i = 0; i < maxAttempts; i++) {
+    const port = preferredPort + i;
+    if (excludePorts.includes(port)) {
+      console.log(`Port ${port} is reserved by another backend, skipping...`);
+      continue;
+    }
+    if (await isPortAvailable(port)) {
+      return port;
+    }
+    console.log(`Port ${port} is occupied, trying ${port + 1}...`);
+  }
+  throw new Error(
+    `No available port found in range ${preferredPort}-${
+      preferredPort + maxAttempts - 1
+    }`
+  );
+}
+
+// create the main application window
+function createWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } =
+    primaryDisplay.workAreaSize;
+
+  mainWindow = new BrowserWindow({
+    width: Math.max(Math.floor(screenWidth * 0.8), 1200),
+    height: Math.max(Math.floor(screenHeight * 0.8), 800),
+    minWidth: 1000,
+    minHeight: 800,
+    titleBarStyle: "hiddenInset",
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, "preload.js"),
+      webSecurity: !isDev,
+    },
+    icon: path.join(__dirname, "../frontend/public/eDNA.png"),
+    show: false,
+  });
+
+  if (isDev) {
+    mainWindow.loadURL("http://127.0.0.1:5173");
+
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(path.join(__dirname, "../frontend/dist/index.html"));
+  }
+
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show();
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: "deny" };
+  });
+
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+}
+
+function findExecutablePath(command) {
+  try {
+    if (process.platform === "win32") {
+      const result = execSync(`where ${command}`, {
+        encoding: "utf8",
+        stdio: ["pipe", "pipe", "ignore"],
+        timeout: 3000,
+      });
+      return result.split("\n")[0].trim();
+    } else {
+      const shell = process.env.SHELL;
+
+      const result = execSync(`${shell} -l -c "which ${command}"`, {
+        encoding: "utf8",
+        stdio: ["pipe", "pipe", "ignore"],
+        timeout: 3000,
+      });
+      return result.trim();
+    }
+  } catch (error) {
+    return null;
+  }
+}
+
+function buildEnhancedPath() {
+  const criticalTools = ["docker"];
+  const foundPaths = new Set();
+
+  criticalTools.forEach((tool) => {
+    const toolPath = findExecutablePath(tool);
+    if (toolPath) {
+      const dirPath = path.dirname(toolPath);
+      foundPaths.add(dirPath);
+      console.log(`Found ${tool} at: ${toolPath}`);
+    } else {
+      console.warn(`${tool} not found in current PATH`);
+    }
+  });
+
+  // -- Create PATH: detected paths + original paths + common paths
+  const separator = process.platform === "win32" ? ";" : ":";
+  const pathComponents = [
+    ...Array.from(foundPaths), // Highest priority: dynamically detected paths
+    ...(process.env.PATH || "").split(separator), // Original PATH
+    ...getCommonPaths(), // Fallback: common system paths
+  ];
+
+  // -- Remove duplicates and empty values
+  const uniquePaths = [...new Set(pathComponents.filter(Boolean))];
+  return uniquePaths.join(separator);
+}
+
+function getCommonPaths() {
+  if (process.platform === "darwin") {
+    return ["/usr/local/bin", "/opt/homebrew/bin", "/usr/bin", "/bin"];
+  } else if (process.platform === "win32") {
+    return ["C:\\Program Files\\Docker\\Docker\\resources\\bin"];
+  } else {
+    return ["/usr/local/bin", "/usr/bin", "/bin"];
+  }
+}
+
+// locate packaged python binary (if any) under resources/python/<platform>-<arch>/...
+function pythonPathForPlatform() {
+  const platform = process.platform; // 'darwin' | 'win32' | 'linux'
+  const arch = process.arch; // 'x64' | 'arm64' ...
+  const platformKey = `${platform}-${arch}`;
+  const base = path.join(process.resourcesPath, "python", platformKey);
+
+  // Windows typically has python.exe at root of the package dir
+  if (platform === "win32") {
+    const candidate = path.join(base, "python.exe");
+    if (fs.existsSync(candidate)) return candidate;
+    // fallback: maybe in Scripts or similar
+    return null;
+  }
+
+  // macOS / linux: expect bin/python3
+  const candidate = path.join(base, "bin", "python3");
+  if (fs.existsSync(candidate)) return candidate;
+
+  // fallback: maybe named 'python'
+  const candidate2 = path.join(base, "bin", "python");
+  if (fs.existsSync(candidate2)) return candidate2;
+
+  return null;
+}
+
+function createEnhancedEnvironment() {
+  const env = { ...process.env };
+
+  try {
+    env.PATH = buildEnhancedPath();
+  } catch (error) {
+    console.warn(
+      "Failed to build enhanced PATH, using fallback: ",
+      error.message
+    );
+    const separator = process.platform === "win32" ? ";" : ":";
+    env.PATH =
+      (process.env.PATH || "") + separator + getCommonPaths().join(separator);
+  }
+
+  env.NODE_ENV = "production";
+
+  // If we bundled a Python runtime in resources, point PYTHON_CMD to it so
+  // child processes use the packaged Python rather than relying on system python.
+  try {
+    const pythonCmd = pythonPathForPlatform();
+    if (pythonCmd && fs.existsSync(pythonCmd)) {
+      env.PYTHON_CMD = pythonCmd;
+      console.log("Using packaged Python at", pythonCmd);
+    }
+  } catch (e) {
+    console.warn("Failed to detect packaged python:", e && e.message);
+  }
+
+  return env;
+}
+
+// -- Start Backend Server
+function startAnalysisBackend() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Find available port
+      analysisBackendPort = await findAvailablePort(3001);
+      console.log(`Analysis backend will use port ${analysisBackendPort}`);
+    } catch (err) {
+      return reject(err);
+    }
+
+    const platform = process.platform;
+    const arch = process.arch;
+
+    const platformKey = `${platform}-${arch}`;
+
+    let nodeBinary;
+    if (platform === "win32") {
+      nodeBinary = path.join(
+        process.resourcesPath,
+        "node",
+        platformKey,
+        "node.exe"
+      );
+    } else {
+      nodeBinary = path.join(
+        process.resourcesPath,
+        "node",
+        platformKey,
+        "bin",
+        "node"
+      );
+    }
+
+    const serverScript = path.join(
+      process.resourcesPath,
+      "backend-toolkit",
+      "src",
+      "server.js"
+    );
+
+    console.log("Using Node.js binary:", nodeBinary);
+    console.log("Server script:", serverScript);
+
+    const enhancedEnv = createEnhancedEnvironment();
+    enhancedEnv.PORT = String(analysisBackendPort);
+
+    AnalysisBackendProcess = spawn(nodeBinary, [serverScript], {
+      cwd: path.join(process.resourcesPath, "backend-toolkit"),
+      env: enhancedEnv,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    let settled = false;
+
+    AnalysisBackendProcess.stdout.on("data", (data) => {
+      const msg = data.toString().trim();
+      console.log(`Backend: ${msg}`);
+    });
+
+    AnalysisBackendProcess.stderr.on("data", (data) => {
+      const msg = data.toString().trim();
+      console.error(`Backend Error: ${msg}`);
+      if (!settled && msg.includes("EADDRINUSE")) {
+        settled = true;
+        reject(
+          new Error(
+            `Analysis backend port ${analysisBackendPort} is already in use`
+          )
+        );
+      }
+    });
+
+    AnalysisBackendProcess.on("error", (error) => {
+      console.error("Failed to start backend:", error);
+      if (!settled) {
+        settled = true;
+        reject(error);
+      }
+    });
+
+    AnalysisBackendProcess.on("exit", (code) => {
+      if (!settled) {
+        settled = true;
+        reject(
+          new Error(`Analysis backend exited unexpectedly with code ${code}`)
+        );
+      }
+    });
+
+    waitForBackendHealth(analysisBackendPort, "Analysis backend")
+      .then(() => {
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
+      })
+      .catch((error) => {
+        if (!settled) {
+          settled = true;
+          reject(error);
+        }
+      });
+  });
+}
+
+function stopAnalysisBackend() {
+  return new Promise((resolve) => {
+    if (AnalysisBackendProcess && !AnalysisBackendProcess.killed) {
+      console.log("Terminating backend process...");
+      AnalysisBackendProcess.once("exit", () => {
+        console.log("Backend process terminated.");
+        AnalysisBackendProcess = null;
+        resolve();
+      });
+      AnalysisBackendProcess.kill("SIGTERM");
+    } else {
+      AnalysisBackendProcess = null;
+      resolve();
+    }
+  });
+}
+
+// -- Start Viz backend (backend-viz)
+function startVizBackend() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Find available port, excluding the port already used by analysis backend
+      vizBackendPort = await findAvailablePort(3000, [analysisBackendPort]);
+      console.log(`Viz backend will use port ${vizBackendPort}`);
+    } catch (err) {
+      return reject(err);
+    }
+
+    const platform = process.platform;
+    const arch = process.arch;
+
+    const platformKey = `${platform}-${arch}`;
+
+    let nodeBinary;
+    if (platform === "win32") {
+      nodeBinary = path.join(
+        process.resourcesPath,
+        "node",
+        platformKey,
+        "node.exe"
+      );
+    } else {
+      nodeBinary = path.join(
+        process.resourcesPath,
+        "node",
+        platformKey,
+        "bin",
+        "node"
+      );
+    }
+
+    const serverScript = path.join(
+      process.resourcesPath,
+      "backend-viz",
+      "server.js"
+    );
+
+    console.log("Using Node.js binary for viz backend:", nodeBinary);
+    console.log("Viz server script:", serverScript);
+
+    const enhancedEnv = createEnhancedEnvironment();
+    enhancedEnv.PORT = String(vizBackendPort);
+
+    enhancedEnv.RESOURCES_PATH = process.resourcesPath;
+
+    VizBackendProcess = spawn(nodeBinary, [serverScript], {
+      cwd: path.join(process.resourcesPath, "backend-viz"),
+      env: enhancedEnv,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    let settled = false;
+
+    VizBackendProcess.stdout.on("data", (data) => {
+      const msg = data.toString().trim();
+      console.log(`Viz Backend: ${msg}`);
+    });
+
+    VizBackendProcess.stderr.on("data", (data) => {
+      const msg = data.toString().trim();
+      console.error(`Viz Backend Error: ${msg}`);
+      if (!settled && msg.includes("EADDRINUSE")) {
+        settled = true;
+        reject(
+          new Error(`Viz backend port ${vizBackendPort} is already in use`)
+        );
+      }
+    });
+
+    VizBackendProcess.on("error", (error) => {
+      console.error("Failed to start viz backend:", error);
+      if (!settled) {
+        settled = true;
+        reject(error);
+      }
+    });
+
+    VizBackendProcess.on("exit", (code) => {
+      if (!settled) {
+        settled = true;
+        reject(new Error(`Viz backend exited unexpectedly with code ${code}`));
+      }
+    });
+
+    waitForBackendHealth(vizBackendPort, "Viz backend")
+      .then(() => {
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
+      })
+      .catch((error) => {
+        if (!settled) {
+          settled = true;
+          reject(error);
+        }
+      });
+  });
+}
+
+function stopVizBackend() {
+  return new Promise((resolve) => {
+    if (VizBackendProcess && !VizBackendProcess.killed) {
+      console.log("Terminating viz backend process...");
+      VizBackendProcess.once("exit", () => {
+        console.log("Viz backend process terminated.");
+        VizBackendProcess = null;
+        resolve();
+      });
+      VizBackendProcess.kill("SIGTERM");
+    } else {
+      VizBackendProcess = null;
+      resolve();
+    }
+  });
+}
+
+function cleanFolderContents(folderPath) {
+  try {
+    if (fs.existsSync(folderPath)) {
+      const items = fs.readdirSync(folderPath);
+
+      for (const item of items) {
+        const itemPath = path.join(folderPath, item);
+        fs.rmSync(itemPath, { recursive: true, force: true });
+        console.log(`Successfully deleted: ${itemPath}`);
+      }
+    } else {
+      console.log(`Folder does not exist: ${folderPath}`);
+    }
+  } catch (error) {
+    console.error(`Failed to clean folder ${folderPath}:`, error);
+  }
+}
+
+// Application ready
+app.whenReady().then(async () => {
+  try {
+    // Start backends sequentially to avoid port race conditions
+    if (!isDev) {
+      await startAnalysisBackend();
+      await startVizBackend();
+    }
+
+    createWindow();
+
+    // special handling for macOS
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
+    });
+  } catch (error) {
+    console.error("Failed to start application:", error);
+    dialog.showErrorBox(
+      "Startup Error",
+      `Failed to start the application: ${error.message}`
+    );
+    app.quit();
+  }
+});
+
+// 所有視窗關閉時
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});
+
+// 應用退出前清理
+app.on("before-quit", () => {
+  if (AnalysisBackendProcess && !AnalysisBackendProcess.killed) {
+    console.log("Terminating backend process...");
+    AnalysisBackendProcess.kill("SIGTERM");
+  }
+
+  if (VizBackendProcess && !VizBackendProcess.killed) {
+    console.log("Terminating viz backend process...");
+    VizBackendProcess.kill("SIGTERM");
+  }
+
+  if (!isDev) {
+    const homedir = os.homedir();
+
+    const uploadsPath = path.join(homedir, ".dna-barcode-toolkit", "uploads");
+    const outputsPath = path.join(homedir, ".dna-barcode-toolkit", "outputs");
+    const previewTempPath = path.join(os.tmpdir(), "dna-toolkit-preview");
+
+    cleanFolderContents(uploadsPath);
+    cleanFolderContents(outputsPath);
+    cleanFolderContents(previewTempPath);
+  }
+});
+
+ipcMain.handle("reinitialize-backend", async () => {
+  try {
+    // restart both backends (if present)
+    await stopAnalysisBackend();
+    await stopVizBackend();
+    await startAnalysisBackend();
+    await startVizBackend();
+
+    return {
+      success: true,
+      ports: {
+        analysis: analysisBackendPort,
+        viz: vizBackendPort,
+      },
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle("get-backend-ports", () => {
+  return {
+    analysis: analysisBackendPort,
+    viz: vizBackendPort,
+  };
+});
+
+// 錯誤處理
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+});
+
+process.on("unhandledRejection", (error) => {
+  console.error("Unhandled Rejection:", error);
+});
